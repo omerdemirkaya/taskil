@@ -21,6 +21,12 @@ import sys
 import tarfile
 from pathlib import Path
 
+for stream in (sys.stdout, sys.stderr):
+       try:
+           stream.reconfigure(encoding="utf-8", errors="replace")
+       except AttributeError:
+           pass
+
 ROOT = Path(__file__).resolve().parent
 NAME = "Taskil"
 BUNDLE_ID = "app.taskil.Taskil"
