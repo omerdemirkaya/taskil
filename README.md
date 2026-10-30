@@ -87,3 +87,18 @@ Her kullanıcının görevleri kendi bilgisayarında, kullanıcıya özel klasö
 - Linux: `~/.local/share/taskil/tasks.json`
 
 Önceki "Günlük Takvim" sürümünü kullandıysan verilerin ilk açılışta otomatik olarak taşınır.
+
+
+## Code signing policy
+
+Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org).
+
+**Team roles**
+- Authors: [omerdemirkaya](https://github.com/omerdemirkaya)
+- Reviewers: [omerdemirkaya](https://github.com/omerdemirkaya)
+- Approvers: [omerdemirkaya](https://github.com/omerdemirkaya)
+
+Only binaries built from this repository by its GitHub Actions workflow are signed. Every release is manually approved before signing.
+
+**Privacy policy**
+This program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it. All tasks are stored locally on the user's computer.
