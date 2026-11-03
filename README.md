@@ -11,7 +11,8 @@ Windows, macOS ve Linux'ta çalışır; derlenmiş sürümler için Python kurma
 | `assets/` | Uygulama ikonları (`.ico` Windows, `.icns` macOS, `.png`) |
 | `build.py` | Uygulamayı tek parça programa çeviren derleme betiği |
 | `.github/workflows/build.yml` | GitHub'da üç işletim sistemi için otomatik derleme |
-| `tools/make_icons.py` | İkonları yeniden üretmek için (isteğe bağlı) |
+| `assets/msix/` | Microsoft Store paketinin görselleri |
+| `tools/make_icons.py`, `tools/make_store_assets.py` | İkonları ve Store görsellerini yeniden üretmek için (isteğe bağlı) |
 
 ## Neden GitHub ile derliyoruz?
 
@@ -26,15 +27,13 @@ Windows'ta, macOS uygulaması Mac'te üretilir. GitHub Actions bunu ücretsiz ol
 2. Deponun **Actions** sekmesine gir → **Build Taskil** → **Run workflow**.
    Yaklaşık 5–10 dakika sonra çalışmanın sayfasında **Artifacts** bölümünden
    dosyaları indirip deneyebilirsin.
-3. Yayına hazır olduğunda bir sürüm etiketi gönder:
-   ```bash
-   git tag v1.0.0
-   git push origin v1.0.0
-   ```
-   Derleme bittiğinde dosyalar deponun **Releases** sayfasında yayınlanır.
+3. Yayına hazır olduğunda deponun **Releases → Create a new release** sayfasına git:
+   **Tag** kutusuna `v1.0.1` gibi yeni bir sürüm yazıp **Create new tag** de, bir başlık ver ve
+   **Publish release**'e bas. Derleme otomatik başlar; yaklaşık 10 dakika sonra
+   dosyalar o sürümün altına eklenir.
 
-Yeni sürüm çıkarırken `taskil.py` içindeki `__version__ = "1.0.0"` satırını güncelleyip
-yeni bir etiket (`v1.0.1` gibi) göndermen yeterli.
+Yeni sürüm çıkarırken önce `taskil.py` içindeki `__version__ = "..."` satırını güncelle.
+Microsoft Store her güncellemede sürüm numarasının artmasını şart koşar.
 
 ## Çıkan dosyalar
 
@@ -44,17 +43,28 @@ yeni bir etiket (`v1.0.1` gibi) göndermen yeterli.
 | macOS (M1/M2/M3/M4) | `Taskil-macos-arm64.dmg` | Açar, Taskil'i Uygulamalar'a sürükler |
 | macOS (Intel) | `Taskil-macos-intel.dmg` | Aynı şekilde |
 | Linux | `Taskil-linux-x64.tar.gz` | Açar, `Taskil` dosyasını çalıştırır; istersen `install.sh` menüye ekler |
+| Microsoft Store | `Taskil-microsoft-store-upload.msix` | **Kullanıcılar için değil**; sadece Partner Center'a yüklenir |
+
+## Microsoft Store'a yükleme
+
+Windows derlemesi, `.exe`'nin yanında Store'a yüklenecek `Taskil-microsoft-store-upload.msix`
+dosyasını da üretir. Paket kimlik bilgileri (`Startiux.Taskil`, yayıncı kodu) `build.py`
+içindeki `STORE` bölümündedir. Paket imzasızdır; Microsoft Store onaydan sonra kendisi imzalar,
+bu yüzden Store'dan kuranlar hiçbir güvenlik uyarısı görmez.
+
+1. Partner Center'da Taskil uygulamasında yeni bir gönderim (submission) başlat.
+2. **Packages** bölümüne `.msix` dosyasını yükle.
+3. Mağaza bilgilerini (açıklama, ekran görüntüleri) Türkçe ve İngilizce doldur ve gönder.
 
 ## Web sitesi için indirme linkleri
 
-Dosya adlarında sürüm numarası olmadığı için şu linkler **her zaman en son sürümü** indirir
-(`KULLANICI/DEPO` kısmını kendi deponla değiştir):
+Dosya adlarında sürüm numarası olmadığı için şu linkler **her zaman en son sürümü** indirir:
 
 ```
-https://github.com/KULLANICI/DEPO/releases/latest/download/Taskil-windows-x64.exe
-https://github.com/KULLANICI/DEPO/releases/latest/download/Taskil-macos-arm64.dmg
-https://github.com/KULLANICI/DEPO/releases/latest/download/Taskil-macos-intel.dmg
-https://github.com/KULLANICI/DEPO/releases/latest/download/Taskil-linux-x64.tar.gz
+https://github.com/omerdemirkaya/taskil/releases/latest/download/Taskil-windows-x64.exe
+https://github.com/omerdemirkaya/taskil/releases/latest/download/Taskil-macos-arm64.dmg
+https://github.com/omerdemirkaya/taskil/releases/latest/download/Taskil-macos-intel.dmg
+https://github.com/omerdemirkaya/taskil/releases/latest/download/Taskil-linux-x64.tar.gz
 ```
 
 ## İlk açılışta çıkan güvenlik uyarıları
@@ -63,7 +73,7 @@ Program kod imzası olmadan dağıtıldığı için işletim sistemleri ilk aç�
 Bu uyarılar programın zararlı olduğu anlamına gelmez; tanınmayan yayıncı demektir.
 
 - **Windows:** "Windows bilgisayarınızı korudu" ekranında **Ek bilgi → Yine de çalıştır**.
-  Uyarıyı tamamen kaldırmak için bir kod imzalama sertifikası gerekir.
+  Microsoft Store'dan kurulan sürümde bu uyarı çıkmaz.
 - **macOS:** İlk açılışta engellenirse **Sistem Ayarları → Gizlilik ve Güvenlik** altında
   **Yine de Aç**'a basılır. Uyarısız açılması için Apple Developer hesabı
   (yıllık ücretli) ile imzalama ve notarize işlemi gerekir.
@@ -89,16 +99,12 @@ Her kullanıcının görevleri kendi bilgisayarında, kullanıcıya özel klasö
 Önceki "Günlük Takvim" sürümünü kullandıysan verilerin ilk açılışta otomatik olarak taşınır.
 
 
-## Code signing policy
+## Privacy policy
 
-Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org).
+Taskil does not collect, store or transmit any personal data. It never connects to the
+internet: all tasks are stored only in a local file on the user's own computer, and no
+information is sent to the developer or to any third party.
 
-**Team roles**
-- Authors: [omerdemirkaya](https://github.com/omerdemirkaya)
-- Reviewers: [omerdemirkaya](https://github.com/omerdemirkaya)
-- Approvers: [omerdemirkaya](https://github.com/omerdemirkaya)
-
-Only binaries built from this repository by its GitHub Actions workflow are signed. Every release is manually approved before signing.
-
-**Privacy policy**
-This program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it. All tasks are stored locally on the user's computer.
+Taskil hiçbir kişisel veri toplamaz, saklamaz veya iletmez. İnternete bağlanmaz; tüm görevler
+yalnızca kullanıcının kendi bilgisayarındaki bir dosyada tutulur ve geliştiriciye ya da
+üçüncü taraflara hiçbir bilgi gönderilmez.

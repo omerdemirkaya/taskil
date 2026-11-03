@@ -18,7 +18,7 @@ Taşınabilir mod: programın yanında tasks.json varsa (boş olsa bile) o kulla
 Kaynaktan çalıştırma: Python 3.8+ (tkinter dahil). Derlenmiş sürümler Python gerektirmez.
 """
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 import calendar
 import json
@@ -1722,14 +1722,32 @@ class DayView(tk.Frame):
         self.show_toast(self.app.t("moved_toast"))
 
 
+def running_as_msix():
+    """Microsoft Store (MSIX) paketi içinden mi çalışıyoruz?"""
+    try:
+        import ctypes
+        length = ctypes.c_uint32(0)
+        # Paket yoksa 15700 (APPMODEL_ERROR_NO_PACKAGE), varsa 122 (tampon küçük) döner
+        rc = ctypes.windll.kernel32.GetCurrentPackageFullName(ctypes.byref(length), None)
+        return rc != 15700
+    except Exception:
+        return False
+
+
 def main():
     if sys.platform.startswith("win"):
         try:
             import ctypes
             ctypes.windll.shcore.SetProcessDpiAwareness(1)                     # net yazılar
-            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(APP_ID)  # görev çubuğu ikonu
         except Exception:
             pass
+        # Store sürümünde görev çubuğu kimliğini Windows paketten alır; elle verilmez
+        if not running_as_msix():
+            try:
+                import ctypes
+                ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(APP_ID)
+            except Exception:
+                pass
     App(TaskStore(resolve_data_path())).mainloop()
 
 
